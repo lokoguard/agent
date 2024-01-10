@@ -2,7 +2,10 @@ module github.com/lokoguard/agent
 
 go 1.21.3
 
-require github.com/shirou/gopsutil v3.21.11+incompatible
+require (
+	github.com/shirou/gopsutil v3.21.11+incompatible
+	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
+)
 
 require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
