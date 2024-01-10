@@ -1,4 +1,4 @@
-package file_monitor
+package file_monitoring
 
 import (
 	"context"
