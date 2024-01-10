@@ -1,20 +1,52 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"sync"
 
-	"github.com/lokoguard/agent/resource_monitoring"
+	"github.com/lokoguard/agent/script_executor"
 )
 
 // https://github.com/pesos/grofer/blob/main/pkg/metrics/general/serve_stats.go
 // https://github.com/pesos/grofer/blob/main/pkg/metrics/general/general_stats.go
 
 func main() {
-	resourceStats, err := resource_monitoring.FetchResourceStats()
-	if err != nil {
-		fmt.Println(err)
-		return
+
+	s := script_executor.ScriptDefinition{
+		TaskID: "test",
+		Script: "sudo ls /",
+		Args:   []string{},
 	}
-	// fmt.Println(resourceStats)
-	fmt.Println(resourceStats.JSON())
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	s.RunWithCallback(func(res *script_executor.ScriptResult, err error) {
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println(res)
+		wg.Done()
+	})
+	wg.Wait()
+	// res, err := s.Run()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// log.Println(res)
+
+	// watcher, err := inotify.NewWatcher()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// err = watcher.Watch("/etc")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// for {
+	// 	select {
+	// 	case ev := <-watcher.Event:
+	// 		log.Println("event:", ev)
+	// 	case err := <-watcher.Error:
+	// 		log.Println("error:", err)
+	// 	}
+	// }
 }
