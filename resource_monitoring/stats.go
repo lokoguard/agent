@@ -13,7 +13,7 @@ func FetchResourceStats() (*ResourceStats, error) {
 	if err != nil {
 		return nil, err
 	}
-	resourceStats.MemStats = *memStats
+	resourceStats.MemStat = *memStats
 	diskStats, err := FetchDiskStats()
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func FetchResourceStats() (*ResourceStats, error) {
 	if err != nil {
 		return nil, err
 	}
-	resourceStats.NetStats = *netStats
+	resourceStats.NetStat = *netStats
 	hostInfo, err := FetchHostInfo()
 	if err != nil {
 		return nil, err

@@ -4,10 +4,10 @@ import "fmt"
 
 type ResourceStats struct {
 	CPUStats  []float32               `json:"cpu_stats"`
-	MemStats  MemoryStat              `json:"mem_stats"`
+	MemStat   MemoryStat              `json:"mem_stat"`
 	DiskStats []DiskStat              `json:"disk_stats"`
 	TempStats []SensorTemperatureInfo `json:"temp_stats"`
-	NetStats  NetStat                 `json:"net_stats"`
+	NetStat   NetStat                 `json:"net_stat"`
 	HostInfo  HostInfo                `json:"host_info"`
 	TimeStamp uint64                  `json:"timestamp"`
 }
@@ -28,10 +28,10 @@ func (r ResourceStats) String() string {
 	msg := "----- Resource Stats -----\n\n"
 	msg += fmt.Sprintf("Host Info: \n%v\n\n", r.HostInfo)
 	msg += fmt.Sprintf("CPU Stats: \n%s\n\n", cpuStatsString)
-	msg += fmt.Sprintf("Memory Stats: \n%v\n\n", r.MemStats)
+	msg += fmt.Sprintf("Memory Stats: \n%v\n\n", r.MemStat)
 	msg += fmt.Sprintf("Disk Stats: \n%s\n\n", diskStatString)
 	msg += fmt.Sprintf("Temperature Stats: \n%s\n\n", tempStatString)
-	msg += fmt.Sprintf("Network Stats: \n%v\n\n", r.NetStats)
+	msg += fmt.Sprintf("Network Stats: \n%v\n\n", r.NetStat)
 	msg += fmt.Sprintf("Timestamp: %d\n", r.TimeStamp)
 	return msg
 }
