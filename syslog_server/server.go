@@ -1,7 +1,7 @@
 package syslogserver
 
 import (
-	"fmt"
+	"log"
 	"net"
 )
 
@@ -9,7 +9,7 @@ func Start(syslogMessageProcessor ResultCallbackType) {
 	// TCP Server
 	tcpListener, err := net.Listen("tcp", ":601")
 	if err != nil {
-		fmt.Println("Error creating TCP listener:", err)
+		log.Println("Error creating TCP listener:", err)
 		return
 	}
 	defer tcpListener.Close()
@@ -17,7 +17,7 @@ func Start(syslogMessageProcessor ResultCallbackType) {
 		for {
 			conn, err := tcpListener.Accept()
 			if err != nil {
-				fmt.Println("Error accepting TCP connection:", err)
+				log.Println("Error accepting TCP connection:", err)
 				return
 			}
 			go handleTCP(conn, syslogMessageProcessor)
@@ -27,19 +27,19 @@ func Start(syslogMessageProcessor ResultCallbackType) {
 	// UDP Server
 	udpAddr, err := net.ResolveUDPAddr("udp", ":514")
 	if err != nil {
-		fmt.Println("Error resolving UDP address:", err)
+		log.Println("Error resolving UDP address:", err)
 		return
 	}
 
 	udpListener, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
-		fmt.Println("Error creating UDP listener:", err)
+		log.Println("Error creating UDP listener:", err)
 		return
 	}
 	defer udpListener.Close()
-	handleUDP(udpListener, syslogMessageProcessor)
+	go handleUDP(udpListener, syslogMessageProcessor)
 
-	// Keep the main goroutine running
+	// wait lifetime
 	select {}
 }
 
@@ -49,7 +49,7 @@ func handleTCP(conn net.Conn, syslogMessageProcessor ResultCallbackType) {
 	for {
 		n, err := conn.Read(buffer)
 		if err != nil {
-			fmt.Println("Error reading TCP:", err)
+			log.Println("Error reading TCP:", err)
 			return
 		}
 		message := string(buffer[:n])
@@ -62,7 +62,7 @@ func handleUDP(conn *net.UDPConn, syslogMessageProcessor ResultCallbackType) {
 	for {
 		n, _, err := conn.ReadFromUDP(buffer)
 		if err != nil {
-			fmt.Println("Error reading UDP:", err)
+			log.Println("Error reading UDP:", err)
 			return
 		}
 		message := string(buffer[:n])
@@ -73,7 +73,7 @@ func handleUDP(conn *net.UDPConn, syslogMessageProcessor ResultCallbackType) {
 func processIncomingSyslogMessage(message string, syslogMessageProcessor ResultCallbackType) {
 	syslogMessage, err := FormatSyslogMessage(message)
 	if err != nil {
-		fmt.Println("Error parsing syslog message:", err)
+		log.Println("Error parsing syslog message:", err)
 		return
 	}
 	go syslogMessageProcessor(&syslogMessage, nil)

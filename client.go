@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 )
@@ -31,6 +32,7 @@ func GETRequest(route string) (*http.Response, error) {
 		return nil, err
 	}
 	request.Header.Set("Authorization", "Bearer "+AuthToken())
+	request.Header.Set("Accept", "application/json")
 	// Send the request
 	client := &http.Client{}
 	return client.Do(request)
@@ -49,6 +51,9 @@ func POSTRequest(route string, body []byte) (*http.Response, error) {
 		return nil, err
 	}
 	request.Header.Set("Authorization", "Bearer "+AuthToken())
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Content-Length", fmt.Sprint(len(body)))
+	request.Header.Set("Accept", "application/json")
 	// Send the request
 	client := &http.Client{}
 	return client.Do(request)
