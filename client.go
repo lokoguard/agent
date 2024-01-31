@@ -13,9 +13,9 @@ func ServerEndpoint() string {
 }
 
 func AuthToken() string {
-	auth_token := os.Getenv("LOKOGUARD_CLIENT_TOKEN")
+	auth_token := os.Getenv("lokoguard_agent_token")
 	if auth_token == "" {
-		panic("LOKOGUARD_CLIENT_TOKEN not set")
+		panic("lokoguard_agent_token not set")
 	}
 	return auth_token
 }
