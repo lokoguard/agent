@@ -39,6 +39,26 @@ func (m *Monitor) RemovePath(fileName string) {
 	delete(m.CancelFuncs, fileName)
 }
 
+func (m *Monitor) SetFileList(fileList []string) {
+	m.Mutex.Lock()
+	defer m.Mutex.Unlock()
+	// find out which files to remove
+	for fileName, cancel := range m.CancelFuncs {
+		if !contains(fileList, fileName) {
+			cancel()
+			delete(m.CancelFuncs, fileName)
+		}
+	}
+	// find out which files to add
+	for _, fileName := range fileList {
+		if m.CancelFuncs[fileName] == nil {
+			ctx, cancel := context.WithCancel(context.Background())
+			m.CancelFuncs[fileName] = cancel
+			go m.startMonitoring(ctx, fileName)
+		}
+	}
+}
+
 func (m *Monitor) startMonitoring(ctx context.Context, fileName string) {
 	watcher, err := inotify.NewWatcher()
 	if err != nil {
@@ -83,4 +103,14 @@ func (m *Monitor) startMonitoring(ctx context.Context, fileName string) {
 			return
 		}
 	}
+}
+
+
+func contains(fileList []string, fileName string) bool {
+	for _, f := range fileList {
+		if f == fileName {
+			return true
+		}
+	}
+	return false
 }
