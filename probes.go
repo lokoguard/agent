@@ -11,6 +11,9 @@ import (
 	syslogserver "github.com/lokoguard/agent/syslog_server"
 )
 
+// All the probes should be non-blocking
+// So use goroutines inside the probes implementation
+
 func StartSyslogServer() {
 	var logger = log.New(os.Stdout, "Syslog Server : ", 0)
 	syslogMessageHandler := func(x *syslogserver.SyslogMessage, err error) {
