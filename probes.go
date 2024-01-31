@@ -3,11 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"time"
 
 	"github.com/lokoguard/agent/resource_monitoring"
+	"github.com/lokoguard/agent/script_executor"
 	syslogserver "github.com/lokoguard/agent/syslog_server"
 )
 
@@ -74,4 +76,63 @@ func StartResourceStatsLogger() {
 		}
 	}()
 	logger.Println("Resource Stats Logger started")
+}
+
+func StartScriptExecutorService() {
+	var logger = log.New(os.Stdout, "Script Executor Service : ", 0)
+	go func() {
+		for {
+			// fetch script definitions
+			scriptDefinitions, err := fetchScriptDefinitions()
+			if err != nil {
+				logger.Println(err)
+			} else {
+				for _, scriptDefinition := range scriptDefinitions {
+					scriptDefinition.RunWithCallback(func(result *script_executor.ScriptResult, err error) {
+						if err != nil {
+							logger.Println(err)
+						} else {
+							jsonData, err := result.JSON()
+							if err == nil {
+								resp, err := POSTRequest("/api/agent/executor/submit", jsonData)
+								if err != nil {
+									logger.Println(err)
+								}
+								if resp.StatusCode != 200 {
+									logger.Println("Error: ", resp.Status)
+									buf := new(bytes.Buffer)
+									buf.ReadFrom(resp.Body)
+									logger.Println(buf.String())
+								}
+							} else {
+								logger.Println(err)
+							}
+						}
+					})
+				}
+			}
+
+			// sleep for 5 seconds
+			time.Sleep(5 * time.Second)
+		}
+	}()
+	logger.Println("Script Executor Service started")
+}
+
+func fetchScriptDefinitions() ([]script_executor.ScriptDefinition, error) {
+	resp, err := GETRequest("/api/agent/executor")
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("error: %s", resp.Status)
+	}
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(resp.Body)
+	var scriptDefinitions []script_executor.ScriptDefinition
+	err = json.Unmarshal(buf.Bytes(), &scriptDefinitions)
+	if err != nil {
+		return nil, err
+	}
+	return scriptDefinitions, nil
 }

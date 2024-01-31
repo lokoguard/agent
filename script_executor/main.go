@@ -50,7 +50,13 @@ func (s ScriptDefinition) Run() (*ScriptResult, error) {
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			// The command had a non-zero exit code
-			return nil, fmt.Errorf("script failed with exit code %d\nStdout:\n%s\nStderr:\n%s", exitErr.ExitCode(), stdout.String(), stderr.String())
+			return &ScriptResult{
+				TaskID:   s.TaskID,
+				Output:   stdout.String(),
+				Error:    stderr.String(),
+				Success:  false,
+				ExitCode: exitErr.ExitCode(),
+			}, nil
 		}
 		return nil, fmt.Errorf("error running script: %v", err)
 	}
