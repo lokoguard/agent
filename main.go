@@ -7,7 +7,9 @@ func main() {
 	StartResourceStatsLogger()
 	// Start the script executor
 	StartScriptExecutorService()
-	
+	// Start the file monitoring service
+	StartFileMonitoringService()
+
 	// wait lifetime
 	select {}
 }

@@ -2,6 +2,7 @@ package file_monitoring
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 )
@@ -23,6 +24,10 @@ type UpdateEvent struct {
 
 func (event UpdateEvent) String() string {
 	return event.FileName + " " + string(event.Type) + " " + fmt.Sprint(event.Timestamp)
+}
+
+func (event UpdateEvent) JSON() ([]byte, error) {
+	return json.Marshal(event)
 }
 
 type Monitor struct {

@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/lokoguard/agent/file_monitoring"
 	"github.com/lokoguard/agent/resource_monitoring"
 	"github.com/lokoguard/agent/script_executor"
 	syslogserver "github.com/lokoguard/agent/syslog_server"
@@ -121,6 +122,60 @@ func StartScriptExecutorService() {
 		}
 	}()
 	logger.Println("Script Executor Service started")
+}
+
+func StartFileMonitoringService() {
+	var logger = log.New(os.Stdout, "File Monitoring Service : ", 0)
+	// Start the file monitoring service
+	file_monitor := file_monitoring.NewMonitor(func(event *file_monitoring.UpdateEvent) {
+		jsonData, err := event.JSON()
+		if err == nil {
+			resp, err := POSTRequest("/api/agent/monitor/file", jsonData)
+			if err != nil {
+				logger.Println(err)
+			}
+			if resp.StatusCode != 200 {
+				logger.Println("Error: ", resp.Status)
+				buf := new(bytes.Buffer)
+				buf.ReadFrom(resp.Body)
+				logger.Println(buf.String())
+			}
+		} else {
+			logger.Println(err)
+		}
+	})
+
+	// Start listener for required file tracking infos
+	go func() {
+		for {
+			// fetch file list
+			resp, err := GETRequest("/api/agent/monitor/file")
+			if err != nil {
+				logger.Println(err)
+			} else {
+				if resp.StatusCode != 200 {
+					logger.Println("Error: ", resp.Status)
+					buf := new(bytes.Buffer)
+					buf.ReadFrom(resp.Body)
+					logger.Println(buf.String())
+				} else {
+					buf := new(bytes.Buffer)
+					buf.ReadFrom(resp.Body)
+					var fileNames []string
+					err = json.Unmarshal(buf.Bytes(), &fileNames)
+					if err != nil {
+						logger.Println(err)
+					} else {
+						file_monitor.UpdateFileList(fileNames)
+					}
+				}
+			}
+			// sleep for 10 seconds
+			time.Sleep(10 * time.Second)
+		}
+	}()
+
+	logger.Println("File Monitoring Service started")
 }
 
 // Helper functions

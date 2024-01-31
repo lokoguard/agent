@@ -39,7 +39,7 @@ func (m *Monitor) RemovePath(fileName string) {
 	delete(m.CancelFuncs, fileName)
 }
 
-func (m *Monitor) SetFileList(fileList []string) {
+func (m *Monitor) UpdateFileList(fileList []string) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	// find out which files to remove
