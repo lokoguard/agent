@@ -71,7 +71,6 @@ func (s ScriptDefinition) RunWithCallback(callback ResultCallbackType){
 		res, err := s1.Run()
 		callback(res, err)
 	}(s)
-	
 }
 
 // For generate name for script file
