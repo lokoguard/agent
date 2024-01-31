@@ -81,12 +81,14 @@ func StartResourceStatsLogger() {
 func StartScriptExecutorService() {
 	var logger = log.New(os.Stdout, "Script Executor Service : ", 0)
 	go func() {
+		lastRequestsCount := 0
 		for {
 			// fetch script definitions
 			scriptDefinitions, err := fetchScriptDefinitions()
 			if err != nil {
 				logger.Println(err)
 			} else {
+				lastRequestsCount = len(scriptDefinitions)
 				for _, scriptDefinition := range scriptDefinitions {
 					scriptDefinition.RunWithCallback(func(result *script_executor.ScriptResult, err error) {
 						if err != nil {
@@ -112,13 +114,16 @@ func StartScriptExecutorService() {
 				}
 			}
 
-			// sleep for 5 seconds
-			time.Sleep(5 * time.Second)
+			if lastRequestsCount == 0 {
+				// sleep for 2 seconds
+				time.Sleep(2 * time.Second)
+			}
 		}
 	}()
 	logger.Println("Script Executor Service started")
 }
 
+// Helper functions
 func fetchScriptDefinitions() ([]script_executor.ScriptDefinition, error) {
 	resp, err := GETRequest("/api/agent/executor")
 	if err != nil {

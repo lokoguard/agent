@@ -5,9 +5,9 @@ func main() {
 	StartSyslogServer()
 	// Start the resource stats logger
 	StartResourceStatsLogger()
-
 	// Start the script executor
 	StartScriptExecutorService()
+	
 	// wait lifetime
 	select {}
 }
