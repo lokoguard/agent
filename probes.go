@@ -30,13 +30,14 @@ func StartSyslogServer() {
 			resp, err := POSTRequest("/api/agent/log", jsonData)
 			if err != nil {
 				logger.Println(err)
-			}
-			if resp.StatusCode != 200 {
-				logger.Println("Error: ", resp.Status)
-				// print body
-				buf := new(bytes.Buffer)
-				buf.ReadFrom(resp.Body)
-				logger.Println(buf.String())
+			} else {
+				if resp.StatusCode != 200 {
+					logger.Println("Error: ", resp.Status)
+					// print body
+					buf := new(bytes.Buffer)
+					buf.ReadFrom(resp.Body)
+					logger.Println(buf.String())
+				}
 			}
 		} else {
 			logger.Println(err)
@@ -61,12 +62,13 @@ func StartResourceStatsLogger() {
 					resp, err := POSTRequest("api/agent/monitor/resource", jsonData)
 					if err != nil {
 						logger.Println(err)
-					}
-					if resp.StatusCode != 200 {
-						logger.Println("Error: ", resp.Status)
-						buf := new(bytes.Buffer)
-						buf.ReadFrom(resp.Body)
-						logger.Println(buf.String())
+					} else {
+						if resp.StatusCode != 200 {
+							logger.Println("Error: ", resp.Status)
+							buf := new(bytes.Buffer)
+							buf.ReadFrom(resp.Body)
+							logger.Println(buf.String())
+						}
 					}
 				} else {
 					logger.Println(err)
@@ -82,15 +84,19 @@ func StartResourceStatsLogger() {
 func StartScriptExecutorService() {
 	var logger = log.New(os.Stdout, "Script Executor Service : ", 0)
 	go func() {
-		lastRequestsCount := 0
+		runningScripts := make(map[int]bool)
 		for {
 			// fetch script definitions
 			scriptDefinitions, err := fetchScriptDefinitions()
 			if err != nil {
 				logger.Println(err)
 			} else {
-				lastRequestsCount = len(scriptDefinitions)
 				for _, scriptDefinition := range scriptDefinitions {
+					// check if the script is already running
+					if ok := runningScripts[scriptDefinition.TaskID]; ok {
+						continue
+					}
+					runningScripts[scriptDefinition.TaskID] = true
 					scriptDefinition.RunWithCallback(func(result *script_executor.ScriptResult, err error) {
 						if err != nil {
 							logger.Println(err)
@@ -100,12 +106,13 @@ func StartScriptExecutorService() {
 								resp, err := POSTRequest("/api/agent/executor/submit", jsonData)
 								if err != nil {
 									logger.Println(err)
-								}
-								if resp.StatusCode != 200 {
-									logger.Println("Error: ", resp.Status)
-									buf := new(bytes.Buffer)
-									buf.ReadFrom(resp.Body)
-									logger.Println(buf.String())
+								} else {
+									if resp.StatusCode != 200 {
+										logger.Println("Error: ", resp.Status)
+										buf := new(bytes.Buffer)
+										buf.ReadFrom(resp.Body)
+										logger.Println(buf.String())
+									}
 								}
 							} else {
 								logger.Println(err)
@@ -114,11 +121,7 @@ func StartScriptExecutorService() {
 					})
 				}
 			}
-
-			if lastRequestsCount == 0 {
-				// sleep for 2 seconds
-				time.Sleep(2 * time.Second)
-			}
+			time.Sleep(2 * time.Second)
 		}
 	}()
 	logger.Println("Script Executor Service started")
@@ -133,12 +136,13 @@ func StartFileMonitoringService() {
 			resp, err := POSTRequest("/api/agent/monitor/file", jsonData)
 			if err != nil {
 				logger.Println(err)
-			}
-			if resp.StatusCode != 200 {
-				logger.Println("Error: ", resp.Status)
-				buf := new(bytes.Buffer)
-				buf.ReadFrom(resp.Body)
-				logger.Println(buf.String())
+			} else {
+				if resp.StatusCode != 200 {
+					logger.Println("Error: ", resp.Status)
+					buf := new(bytes.Buffer)
+					buf.ReadFrom(resp.Body)
+					logger.Println(buf.String())
+				}
 			}
 		} else {
 			logger.Println(err)

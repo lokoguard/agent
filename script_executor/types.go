@@ -20,7 +20,7 @@ type ScriptResult struct {
 }
 
 func (s ScriptResult) String() string {
-	return fmt.Sprintf("TaskID: %s\nOutput: %s\nError: %s\nSuccess: %t\nExitCode: %d\n", s.TaskID, s.Output, s.Error, s.Success, s.ExitCode)
+	return fmt.Sprintf("TaskID: %d\nOutput: %s\nError: %s\nSuccess: %t\nExitCode: %d\n", s.TaskID, s.Output, s.Error, s.Success, s.ExitCode)
 }
 
 func (s ScriptResult) JSON() ([]byte, error) {
