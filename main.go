@@ -9,7 +9,8 @@ func main() {
 	StartScriptExecutorService()
 	// Start the file monitoring service
 	StartFileMonitoringService()
-
+	// Start the ping service
+	StartPingService()
 	// wait lifetime
 	select {}
 }

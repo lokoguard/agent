@@ -178,6 +178,18 @@ func StartFileMonitoringService() {
 	logger.Println("File Monitoring Service started")
 }
 
+func StartPingService() {
+	var logger = log.New(os.Stdout, "Ping Service : ", 0)
+	go func() {
+		_, err := GETRequest("/api/agent/ping")
+		if err != nil {
+			logger.Println(err)
+		}
+		// sleep for 10 seconds
+		time.Sleep(10 * time.Second)
+	}()
+}
+
 // Helper functions
 func fetchScriptDefinitions() ([]script_executor.ScriptDefinition, error) {
 	resp, err := GETRequest("/api/agent/executor")
