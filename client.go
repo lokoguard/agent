@@ -6,10 +6,15 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func ServerEndpoint() string {
-	return "http://localhost:3000"
+	endpoint := os.Getenv("lokoguard_agent_endpoint")
+	if strings.Compare(endpoint, "") == 0 {
+		return "http://localhost:3000"
+	}
+	return endpoint
 }
 
 func AuthToken() string {
